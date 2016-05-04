@@ -29,6 +29,7 @@ use OC\Files\Filesystem;
 use OCA\FederatedFileSharing\DiscoveryManager;
 use OCA\FederatedFileSharing\FederatedShareProvider;
 use OCA\FederatedFileSharing\RequestHandler;
+use OCP\IUserManager;
 
 /**
  * Class RequestHandlerTest
@@ -53,6 +54,15 @@ class RequestHandlerTest extends TestCase {
 	/** @var  \OCA\FederatedFileSharing\FederatedShareProvider | PHPUnit_Framework_MockObject_MockObject */
 	private $federatedShareProvider;
 
+	/** @var  \OCA\FederatedFileSharing\Notifications | PHPUnit_Framework_MockObject_MockObject */
+	private $notifications;
+
+	/** @var  \OCA\FederatedFileSharing\AddressHandler | PHPUnit_Framework_MockObject_MockObject */
+	private $addressHandler;
+	
+	/** @var  IUserManager | \PHPUnit_Framework_MockObject_MockObject */
+	private $userManager;
+
 	protected function setUp() {
 		parent::setUp();
 
@@ -73,9 +83,23 @@ class RequestHandlerTest extends TestCase {
 		$this->federatedShareProvider->expects($this->any())
 			->method('isIncomingServer2serverShareEnabled')->willReturn(true);
 
+		$this->notifications = $this->getMockBuilder('OCA\FederatedFileSharing\Notifications')
+			->disableOriginalConstructor()->getMock();
+		$this->addressHandler = $this->getMockBuilder('OCA\FederatedFileSharing\AddressHandler')
+			->disableOriginalConstructor()->getMock();
+		$this->userManager = $this->getMock('OCP\IUserManager');
+		
 		$this->registerHttpHelper($httpHelperMock);
 
-		$this->s2s = new RequestHandler($this->federatedShareProvider, \OC::$server->getDatabaseConnection());
+		$this->s2s = new RequestHandler(
+			$this->federatedShareProvider,
+			\OC::$server->getDatabaseConnection(),
+			\OC::$server->getShareManager(),
+			\OC::$server->getRequest(),
+			$this->notification,
+			$this->addressHandler,
+			$this->userManager
+		);
 
 		$this->connection = \OC::$server->getDatabaseConnection();
 	}
