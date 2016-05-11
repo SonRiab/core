@@ -99,7 +99,13 @@ class Share20OCS {
 	 */
 	protected function formatShare(\OCP\Share\IShare $share) {
 		$sharedBy = $this->userManager->get($share->getSharedBy());
-		$shareOwner = $this->userManager->get($share->getShareOwner());
+		// for federated shares the owner can be a remote user, in this
+		// case we use the initiator
+		if ($this->userManager->userExists($share->getShareOwner())) {
+			$shareOwner = $this->userManager->get($share->getShareOwner());
+		} else {
+			$shareOwner = $this->userManager->get($share->getSharedBy());
+		}
 		$result = [
 			'id' => $share->getId(),
 			'share_type' => $share->getShareType(),
@@ -115,7 +121,7 @@ class Share20OCS {
 		];
 
 		$node = $share->getNode();
-		$result['path'] = $this->rootFolder->getUserFolder($share->getShareOwner())->getRelativePath($node->getPath());
+		$result['path'] = $this->rootFolder->getUserFolder($shareOwner->getUID())->getRelativePath($node->getPath());
 		if ($node instanceOf \OCP\Files\Folder) {
 			$result['item_type'] = 'folder';
 		} else {

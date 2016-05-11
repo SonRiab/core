@@ -30,6 +30,7 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IL10N;
 use OCP\ILogger;
+use OCP\IUserManager;
 use OCP\Share\IManager;
 use Test\TestCase;
 
@@ -57,6 +58,8 @@ class FederatedShareProviderTest extends TestCase {
 	protected $rootFolder;
 	/** @var  IConfig | \PHPUnit_Framework_MockObject_MockObject */
 	protected $config;
+	/** @var  IUserManager | \PHPUnit_Framework_MockObject_MockObject */
+	protected $userManager;
 
 	/** @var IManager */
 	protected $shareManager;
@@ -82,6 +85,7 @@ class FederatedShareProviderTest extends TestCase {
 		$this->logger = $this->getMock('OCP\ILogger');
 		$this->rootFolder = $this->getMock('OCP\Files\IRootFolder');
 		$this->config = $this->getMock('OCP\IConfig');
+		$this->userManager = $this->getMock('OCP\IUserManager');
 		$this->addressHandler = new AddressHandler(\OC::$server->getURLGenerator(), $this->l);
 
 		$this->provider = new FederatedShareProvider(
@@ -92,7 +96,8 @@ class FederatedShareProviderTest extends TestCase {
 			$this->l,
 			$this->logger,
 			$this->rootFolder,
-			$this->config
+			$this->config,
+			$this->userManager
 		);
 
 		$this->shareManager = \OC::$server->getShareManager();
