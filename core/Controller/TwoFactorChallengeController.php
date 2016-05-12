@@ -81,6 +81,7 @@ class TwoFactorChallengeController extends Controller {
 	/**
 	 * @NoCSRFRequired
 	 * @PublicPage
+	 * @UseSession
 	 *
 	 * @param int $challengeProviderId
 	 * @return TemplateResponse
@@ -92,7 +93,14 @@ class TwoFactorChallengeController extends Controller {
 			return new RedirectResponse($this->urlGenerator->linkToRoute('core.TwoFactorChallenge.selectChallenge'));
 		}
 
+		if ($this->session->exists('two_factor_auth_error')) {
+			$this->session->remove('two_factor_auth_error');
+			$error = true;
+		} else {
+			$error = false;
+		}
 		$data = [
+			'error' => $error,
 			'provider' => $provider,
 			'template' => $provider->getTemplate($user)->fetchPage(),
 		];
@@ -119,6 +127,7 @@ class TwoFactorChallengeController extends Controller {
 			return new RedirectResponse($this->urlGenerator->linkToRoute('files.view.index'));
 		}
 
+		$this->session->set('two_factor_auth_error', true);
 		return new RedirectResponse($this->urlGenerator->linkToRoute('core.TwoFactorChallenge.showChallenge', ['challengeProviderId' => $provider->getId()]));
 	}
 

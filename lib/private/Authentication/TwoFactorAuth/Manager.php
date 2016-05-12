@@ -55,7 +55,7 @@ class Manager {
 	 * @return boolean
 	 */
 	public function isTwoFactorAuthenticated(IUser $user) {
-		return !empty($this->getProviders($user));
+		return count($this->getProviders($user)) > 0;
 	}
 
 	/**
