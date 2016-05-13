@@ -526,27 +526,42 @@ class RequestHandler {
 	/**
 	 * update share information to keep federated re-shares in sync
 	 */
-	public function update() {
+	public function updatePermissions($params) {
+		$id = (int)$params['id'];
 		$token = $this->request->getParam('token', null);
 		$data = $this->request->getParam('data', []);
 
 		$dataArray = json_decode($data, true);
 
 		try {
-			$share = $this->federatedShareProvider->getShareByToken($token);
+			$share = $this->federatedShareProvider->getShareById($id);
 		} catch (Share\Exceptions\ShareNotFound $e) {
 			return new \OC_OCS_Result(null, Http::STATUS_BAD_REQUEST);
 		}
 
-		if (isset($dataArray['decline'])) {
-			$this->executeDeclineShare($share);
-		}
-
-		if (isset($dataArray['accept'])) {
-			$this->executeAcceptShare($share);
+		$validPermission = isset($dataArray['permissions']) && is_int($dataArray['permissions']);
+		$validToken = $this->verifyShare($share, $token);
+		if ($validPermission && $validToken) {
+			$this->updatePermissionsInDatabase($share, (int)$dataArray['permissions']);
+		} else {
+			return new \OC_OCS_Result(null, Http::STATUS_BAD_REQUEST);
 		}
 
 		return new \OC_OCS_Result();
+	}
+
+	/**
+	 * update permissions in database
+	 *
+	 * @param IShare $share
+	 * @param $permissions
+	 */
+	protected function updatePermissionsInDatabase(IShare $share, $permissions) {
+		$query = $this->connection->getQueryBuilder();
+		$query->update('share')
+			->where($query->expr()->eq('id', $query->createNamedParameter($share->getId())))
+			->set('permissions', $query->createNamedParameter($permissions))
+			->execute();
 	}
 
 }
