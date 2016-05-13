@@ -62,12 +62,12 @@ class Manager {
 	 * Get a 2FA provider by its ID
 	 *
 	 * @param IUser $user
-	 * @param string $providerId
+	 * @param string $challengeProviderId
 	 * @return IProvider|null
 	 */
-	public function getProvider(IUser $user, $providerId) {
+	public function getProvider(IUser $user, $challengeProviderId) {
 		$providers = $this->getProviders($user);
-		return $providers[$providerId] ? : null;
+		return $providers[$challengeProviderId] ? : null;
 	}
 
 	/**
@@ -81,11 +81,12 @@ class Manager {
 		$providers = [];
 
 		foreach ($allApps as $appId) {
-			$x = $this->appManager->getAppInfo($appId);
-			$providerClasses = $x['two-factor-providers'];
+			$info = $this->appManager->getAppInfo($appId);
+			$providerClasses = $info['two-factor-providers'];
 			foreach ($providerClasses as $class) {
 				try {
-					$providers[] = OC::$server->query($class);
+					$provider = OC::$server->query($class);
+					$providers[$provider->getId()] = $provider;
 				} catch (QueryException $exc) {
 					
 				}

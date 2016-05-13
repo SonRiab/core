@@ -83,7 +83,7 @@ class TwoFactorChallengeController extends Controller {
 	 * @PublicPage
 	 * @UseSession
 	 *
-	 * @param int $challengeProviderId
+	 * @param string $challengeProviderId
 	 * @return TemplateResponse
 	 */
 	public function showChallenge($challengeProviderId) {
